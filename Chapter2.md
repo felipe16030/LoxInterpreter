@@ -20,3 +20,28 @@ From here we have reached the summit of the mountain and need to store the seman
 - Transform the tree into a new DS that more directly expresses the semantics of the code
 
 Everything up to Statis Analysis is considered the front end of the implementation.
+
+#### Intermediate Representations
+
+After the front end, the code may be stored in an intermediate representation that is not specific to either the source language or the destination computer.
+
+This enables one uniform representation for the front end given multiple potential source languages and one starting point for each backend given a variety of target ISA's.
+
+#### Optimization
+
+Once we have an understanding of the user programming, we are free to swap it out with a different one that carries the same semantics (e.g. simple folding: calculate static expressions at compile time)
+
+#### Code Generation
+
+Here we begin the backend, generating more and more primitive code that a CPU can actually run (e.g. assembly, machine code).
+
+Additionally, we are presented with a choice: creating an executable that our OS can load directly onto the chip (very complicated given the complexity of modern ISA's) vs generating code for an idealized "virtual" machine. This idealized virtual code is valled **bytecode** and is "portable" from machine to machine.
+
+#### Virtual Machine
+
+From here, we make another decision. We can further compile our bytecode into native code for the specific machine it runs on or we can write a virutal machine, a program that emulates a hypothetical chip supporting our virtual architecture. 
+
+Running a VM is much slower than running native code because every instruction is simulated at runtime, but the benefit is portability.
+
+#### Runtime
+
