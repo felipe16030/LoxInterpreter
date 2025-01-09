@@ -45,3 +45,31 @@ Running a VM is much slower than running native code because every instruction i
 
 #### Runtime
 
+Once the programming is in an executing state, we need a services for our language while the programming is running (e.g. garbage collector, instance of, etc.).
+
+In a fully compiled language, the runtime is inserted directly in the executable. If a language is run inside an interpreter, the runtime exists in the VM.
+
+### Shortcuts and Alternate Routes
+
+#### Single Pass Compilers
+
+Some simple compilers interleave parsing, analysis, and code generation all in one pass. There is no global information held about the program in data structures or IR's. This means that, at compile time, each reference must be known. Languages such as C and Pascal were designed around this restriction and it is why, in those languages, functions must be defined before any references to them.
+
+#### Tree-Walk Interpreters
+This shortcut involves executing code right after parsing it to an AST. Running the code involves traversing the syntax tree one branch and leaf at a time, which is slow.
+
+#### Transpilers
+This shortcut involves taking some IR of the source code and generating valid source code in another language, about as high level as yours. Then, use existing compilation tools on the newly generated "IR" source code. This is called **source-to-source compiler** or a **transpiler**.
+
+The "machine code" of web browsers of today is JavaScript. Therefore, most languages have a compiler that targets JS.
+
+#### Just in Time Compilation
+Reserved more for experts, JIT involves compiling the source code native for the architecture of the end user/computer.
+
+### Compilers and Interpreters
+
+**Compiling** is an *implementation technique* that involves translating a source language to some other (typically lower level) form. Examples include, generating bytecode, machine code, or transpiling. After the source code is compiled, the user has to run the resulting output themselves.
+
+Conversely, an **interpreter** takes the source code and executes it immediately.
+
+Some compilers include GCC and Clang which compile the source code to machine code and require the user to run it. On the other hand, Ruby was fun from source, executed directly by traversing the syntax tree meaning Ruby is interpreted. Finally, in the case of CPython, it is first converted to an internal bytecode format before being executed from this source in a VM. Therefore, CPython is both compiled and interpreter.
