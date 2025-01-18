@@ -25,3 +25,9 @@ For example noting which line we are on in order to report an error with a given
 The core of the scanner is just a loop that reads on char at a time. It attributes the current char to a lexeme and at the end of each lexeme emits a Token.
 
 The rules for how a language groups characters into lexeme is called its lexical grammar. Particularly, you could use RegEx's to read and classify all lexeme.
+
+### Maximal munch
+
+When 2 lexical grammar rules can both match a chunk of code that the scanner is looking at, whichever one matches the most characters wins.
+
+For example `orchid` can match to both the `or` logical operator or to an identifier. We choose the identifier because it matches more characters.
