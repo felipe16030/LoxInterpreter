@@ -61,3 +61,35 @@ operator -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/" ;
 We can represent our grammar in the form of a tree data structure. This data structure will be called the **syntax tree**.
 
 The sytax trees exist as interfaces between the parser and interpreter. That's why some of the classes (e.g. Expr) will lack behavior. We can generate these clases using a script... see `./tool/GenerateAst.java`
+
+### The Expression Problem
+
+For each type of syntax tree, we need a specific implementation of `interpret()` as well as other operations (e.g. `resolve()` and `analyze()`).
+
+In an OOP language, these operations are stored within the class that represents the syntax tree since it is assumed that all operations will do similar things. However, this does not scale well when, for example, adding a new operation to each type.
+
+Functional paradigm languages do the opposite. Instead, they instantiate a single function for an operation and use pattern matching to implement that operation for each type. This also flips the problem in that, adding a new type is hard.
+
+The expression problem is that it will either be difficult to add new types or new operations depending on the architecture.
+
+### The Visitor Pattern
+
+Helps us approximate the functional style within an OOP language. It lets us add new operations easily by defining the behavior for a new opeartion on a set of types in one place without having to adjust the types. It adds a lyer of indirection.
+
+The heart of the trick is to add one `accept(PastryVisitor visitor)` method to each class where we call `visitor.visitClassA(this)`. Then, we have the `PastryVisitor` Interface that implements versions of the `visitClassX(ClassX classx)`. Therefore, we can use it for as many visitors as we want without ever having to touch the pastry classes again.
+
+### A Pretty Printer
+
+We should also have a way of printing syntax trees to ensure they are being constructed as expected.
+
+```java
+/*
+         *
+         /\
+        -  ()
+       /    \
+      123  45.67
+
+   Should produce: (* (- 123) (group 45.67))
+*/
+```
