@@ -33,3 +33,12 @@ unary -> ("!" | "-") unary | primary ;
 primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
 // highest precedence
 ```
+
+### Recursive Descent Parsing
+
+Simplest way to build a parser and doesn't require using complex parsing tools. These parsers are fast, robuts,
+and support strong error handling.
+
+It starts from the top outtermost grammar rule (expression) and matches downward.
+
+Therefore, the parser is a literal translation of a grammar's rules straight into imperative code.
