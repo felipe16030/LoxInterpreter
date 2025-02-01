@@ -3,7 +3,7 @@ package lox;
 import java.util.List;
 import static lox.TokenType.*;
 
-public abstract class Parser {
+public class Parser {
     private static class ParseError extends RuntimeException {}
 
     private final List<Token> tokens;
@@ -11,6 +11,14 @@ public abstract class Parser {
 
     Parser(List<Token> tokens) {
         this.tokens = tokens;
+    }
+
+    Expr parse() {
+        try {
+            return expression();
+        } catch(ParseError error) {
+            return null;
+        }
     }
 
     // immediately matches to equality
@@ -91,6 +99,9 @@ public abstract class Parser {
             consume(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
+        
+        // If the token does not match to any such cases
+        throw error(peek(), "Expect expression.");
     }
 
     // This checks to see if the current token has any of the given types
