@@ -11,3 +11,13 @@ We will have the bridge the gap between Lox's dynamic variables and Java's stati
 ### Evaluating Expressions
 
 We will need an `interpret()` method to evaluate any syntax we parse and thus we use the visitor pattern again.
+
+### Runtime ERrors
+
+These are failures detected while the program is running
+
+Right now, if the user comes accross a runtime error, the JVM will throw an error and unwind, leaving the user with a java error trace stack.
+
+#### Detecting Runtime Errors
+
+Our current, tree-walk interpreter needs to unwind should a runtime error occur.
