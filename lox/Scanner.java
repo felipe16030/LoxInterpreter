@@ -146,7 +146,7 @@ public class Scanner {
         // Consume as many digits as possible
         while(isDigit(peak()) && !isAtEnd()) advance();
 
-        addToken(NUMBER, this.source.substring(this.start, this.current));
+        addToken(NUMBER, Double.parseDouble(this.source.substring(this.start, this.current)));
     }
 
     /**

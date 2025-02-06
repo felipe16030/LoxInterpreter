@@ -1,0 +1,35 @@
+## Statements and State
+
+The goal of this chapter is to give our interpreter a "memory" by storing the expressions in variables
+
+Statements produce **side-effects** which may or may not be visible to the user (think `print` and `var`)
+
+### Statements
+
+**expression-statements** lets you place an expression where a statement is expected. These are function calls followed `;`
+
+a **print-statement** evaluates an expression and prints it to the console.
+
+We must define some new productions to handle statements
+
+```Java
+program -> statement* EOF;
+statement -> exprStmt | printStmt;
+
+exprStmt -> expression ";";
+printStmt -> "print" expression ";";
+```
+Therefore, the production becomes `program` which identifies a list of statements followed by the `EOF` token.
+
+#### Statement syntax trees
+
+Statement will be a seperate class altogether from Expression but it makes use of an expression.
+
+### Global Variables
+
+This is the easiest type of state to support and to accomplish it, we need:
+1. **variable declaration** that brings a new variable into the world by binding the name with a value
+2. **variable expression** accesses the value associated with a name
+
+#### Variable Syntax
+

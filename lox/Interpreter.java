@@ -1,13 +1,16 @@
 package lox;
 
+import java.util.List;
+
 // This will be the evaluation code for each type of expression
 // We return an object from each visitor function because Lox is dynamically typed
-public class Interpreter implements Expr.Visitor<Object>{
-    // this is our API for the interpreter which takes in a syntax tree and evalutes it
-    public void interpret(Expr expression) {
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
+    // this is our API for the interpreter which takes in a list of statements and executes them
+    public void interpret(List<Stmt> statements) {
         try {
-            Object value = evaluate(expression);
-            System.out.println(stringify(value));
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
@@ -109,7 +112,7 @@ public class Interpreter implements Expr.Visitor<Object>{
                 checkNumberOperands(expr.operator, left, right);
                 return (double)left * (double)right;
             case BANG_EQUAL: return !isEqual(left, right);
-            case EQUAL: return isEqual(left, right);
+            case EQUAL_EQUAL: return isEqual(left, right);
         }
 
         return null;
@@ -117,6 +120,23 @@ public class Interpreter implements Expr.Visitor<Object>{
 
     private Object evaluate(Expr expr) {
         return expr.accept(this);
+    }
+
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
+    }
+
+    @Override 
+    public Void visitExpressionStmt(Stmt.Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt) {
+        Object value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
     }
 
     private boolean isTruthy(Object object) {

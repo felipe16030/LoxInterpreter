@@ -1,6 +1,7 @@
 package lox;
 
 import java.util.List;
+import java.util.ArrayList;
 import static lox.TokenType.*;
 
 public class Parser {
@@ -13,12 +14,36 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    Expr parse() {
-        try {
-            return expression();
-        } catch(ParseError error) {
-            return null;
+    List<Stmt> parse() {
+        List<Stmt> statements = new ArrayList<>();
+        while(!isAtEnd()) {
+            statements.add(statement());
         }
+
+        return statements;
+    }
+
+    // private helper function to help us parse statements out of the tokens
+    private Stmt statement() {
+        if(match(PRINT)) return printStatement();
+
+        return expressionStatement();
+    }
+
+    // a print statement is simply the PRINT keyword followed by some expression
+    private Stmt printStatement() {
+        Expr value = expression();
+
+        consume(SEMICOLON, "Expect ';' after value.");
+        return new Stmt.Print(value);
+    }
+    
+    // an expression statement consumes the expression and wraps it in a statement
+    private Stmt expressionStatement() {
+        Expr expr = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+
+        return new Stmt.Expression(expr);
     }
 
     // immediately matches to equality
@@ -34,7 +59,7 @@ public class Parser {
         // for example: a == b == c == d creates a new binary expression each iteration with the 
         // old expression as the left expression
         // if the parser does not hit an equality operator, then it effectively calls and returns comparison()
-        while(match(BANG_EQUAL, EQUAL)) {
+        while(match(BANG_EQUAL, EQUAL_EQUAL)) {
             Token operator = previous();
             Expr right = comparison();
             expr = new Expr.Binary(expr, operator, right);
