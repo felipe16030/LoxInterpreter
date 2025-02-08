@@ -33,3 +33,21 @@ This is the easiest type of state to support and to accomplish it, we need:
 
 #### Variable Syntax
 
+We have to subdivide statements into 2 kinds: those allowed in the body of scope statements (think loops/if-else) and those not. We will restrict variables from being declared within loops.
+
+To accomodate this distinction, we ammend the statement productions:
+
+```Java
+program -> declaration* EOF;
+
+declaration -> varDecl | statement;
+
+statement -> exprStmt | printStmt;
+
+varDecl -> "var" IDENTIFIER ( "=" expression )? ";";
+```
+
+Any place where a statement is allowed, so to is a declaration.
+
+Therefore, we also update primary expressions to include `IDENTIFIER` as well
+

@@ -17,7 +17,7 @@ public class Parser {
     List<Stmt> parse() {
         List<Stmt> statements = new ArrayList<>();
         while(!isAtEnd()) {
-            statements.add(statement());
+            statements.add(declaration());
         }
 
         return statements;
@@ -38,6 +38,18 @@ public class Parser {
         return new Stmt.Print(value);
     }
     
+    // a variable declaration is a the VAR keyword followed by an identifier name and optional initializer.
+    private Stmt varDeclaration() {
+        Token name = consume(IDENTIFIER, "Expect variable name");
+
+        Expr initializer = null;
+        if (match(EQUAL)) {
+            initializer = expression();
+        }
+        consume(SEMICOLON, "Expect ; after variable declaration.");
+        return new Stmt.Var(name, initializer);
+    }
+    
     // an expression statement consumes the expression and wraps it in a statement
     private Stmt expressionStatement() {
         Expr expr = expression();
@@ -49,6 +61,19 @@ public class Parser {
     // immediately matches to equality
     private Expr expression() {
         return equality();
+    }
+    
+    // this is the declaration production that will either produce a statement or variable declaration
+    // it is also where we hook up error recovery since it is a high level production
+    private Stmt declaration() {
+        try {
+            if (match(VAR)) return varDeclaration();
+
+            return statement();
+        } catch(ParseError error) {
+            synchronize();
+            return null;
+        }
     }
 
     private Expr equality() {
@@ -119,6 +144,7 @@ public class Parser {
         if (match(TRUE)) return new Expr.Literal(true);
         if (match(NIL)) return new Expr.Literal(null);
         if (match(NUMBER, STRING)) return new Expr.Literal(previous().literal);
+        if (match(IDENTIFIER)) return new Expr.Variable(previous());
         if (match(LEFT_PAREN)) {
             Expr expr = expression();
             consume(RIGHT_PAREN, "Expect ')' after expression.");
