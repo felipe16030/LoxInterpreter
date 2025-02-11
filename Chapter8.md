@@ -51,3 +51,23 @@ Any place where a statement is allowed, so to is a declaration.
 
 Therefore, we also update primary expressions to include `IDENTIFIER` as well
 
+### Environments
+
+Environments is where we associate variable names with values. It is a map from variable name to value.
+
+It is ok for variables to be referenced before they are defined so long as they are not evaluated.
+
+### Assignment
+
+It is possible to create languages where reassignment is not possible (e.g. Haskell).
+
+Mutating a variable is a side-effect and can be considered "dirty" but in Lox it is allowed.
+
+#### Assignment Syntax
+
+Assignment is denoted with the `=` operator and is actually the lowest precedence expression.
+
+```Java
+expression -> assignment ;
+assignment -> IDENTIFIER "=" assignment | equality ;
+```

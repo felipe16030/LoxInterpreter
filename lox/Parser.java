@@ -58,9 +58,31 @@ public class Parser {
         return new Stmt.Expression(expr);
     }
 
-    // immediately matches to equality
+    // immediately matches to assignment
     private Expr expression() {
-        return equality();
+        return assignment();
+    }
+
+    // we know we are parsing an assignment because the left hand side of the assignment is an l-value/storage location
+    private Expr assignment() {
+        Expr expr = equality();
+        
+        // If we have the assignment operator '='
+        if (match(EQUAL)) {
+            Token equals = previous();
+            Expr value = assignment();
+            
+            // If the left hand side evaluated to a Variable Expr
+            // This is why we need the Variable Expr in order to match assignment
+            if (expr instanceof Expr.Variable) {
+                Token name = ((Expr.Variable)expr).name;
+                return new Expr.Assign(name, value);
+            }
+
+            error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
     }
     
     // this is the declaration production that will either produce a statement or variable declaration
