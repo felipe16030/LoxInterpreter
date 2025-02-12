@@ -71,3 +71,45 @@ Assignment is denoted with the `=` operator and is actually the lowest precedenc
 expression -> assignment ;
 assignment -> IDENTIFIER "=" assignment | equality ;
 ```
+
+### Scope
+
+**scope** defines a region where a name maps to a certain entity. Lexical scope is a style where the text/source code identifies the scope of a variable:
+
+```Java
+{
+    var a = 10;
+    print a; // 10
+}
+
+{
+    var a = 20;
+    print a; // 20
+}
+```
+
+**dynamic scope** means that we are unsure what a name refers to until runtime. 
+
+Lox's scope is controlled via curly braced-blocks called **block scope**
+
+```Java
+{
+    var a = "in block";
+}
+
+print a; // Error outside scope
+```
+
+In lox, it is possible to create a variable inside a scope with the same name as one in an encapusulating scope. In this way, the local variable **shadows** the more global variable. Therefore, every time we enter a new scope, we create a new environment with all of the local variables and then discard it at the end of the block.
+
+To implement this, each nested environment has a pointer to the immediately enclosing scope and we work our way in to out when looking up a variable.
+
+Thus, our new grammar becomes:
+
+```Java
+statement -> exprStmt
+            | printStmt
+            | block ;
+
+block -> "{" declaration* "}" ;
+```

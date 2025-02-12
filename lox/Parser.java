@@ -26,6 +26,7 @@ public class Parser {
     // private helper function to help us parse statements out of the tokens
     private Stmt statement() {
         if(match(PRINT)) return printStatement();
+        if(match(LEFT_BRACE)) return new Stmt.Block(block());
 
         return expressionStatement();
     }
@@ -58,6 +59,19 @@ public class Parser {
         return new Stmt.Expression(expr);
     }
 
+    // block returns a list of statements to create a block statement with.
+    // it consumes all declarations in a block and feeds them to a list.
+    private List<Stmt> block() {
+        List<Stmt> statements = new ArrayList<>();
+
+        while(!check(RIGHT_BRACE) && !isAtEnd()) {
+            statements.add(declaration());
+        }
+
+        consume(RIGHT_BRACE, "Expect '}' after block.");
+        return statements;
+    }
+
     // immediately matches to assignment
     private Expr expression() {
         return assignment();
@@ -70,6 +84,7 @@ public class Parser {
         // If we have the assignment operator '='
         if (match(EQUAL)) {
             Token equals = previous();
+            // Call assignment() to parse the right hand side. This also makes it so that assignment is right associative.
             Expr value = assignment();
             
             // If the left hand side evaluated to a Variable Expr
@@ -78,7 +93,8 @@ public class Parser {
                 Token name = ((Expr.Variable)expr).name;
                 return new Expr.Assign(name, value);
             }
-
+            
+            // Throw a syntax error if assignment on an invalid left hand expression (e.g. a + b = 3)
             error(equals, "Invalid assignment target.");
         }
 
