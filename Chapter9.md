@@ -50,4 +50,26 @@ logic_or -> logic_and ( "or" logic_and )* ;
 logic_and -> equality ( "and" equality )* ;
 ```
 
-This means that assignment cascades to logic_or which cascades to logic_and which cascades to equality
+This means that assignment cascades to logic_or which cascades to logic_and which cascades to equality.
+
+### While Loops
+
+The while loop will be a type of statement (because it produces a side effect -> new environment).
+
+A `statement` can match to a `whileStmt` which has the same composition as a C while loop.
+
+### For Loops
+
+This is the last control flow construct. It has the same C-style declaration and it is a type of statement.
+
+The production for the forStmt looks like:
+
+```Java
+"for" "(" ( varDecl | exprStmt | ";" ) expression? ";" expression? ";" ")" statement ;
+```
+
+The first clause is the initializer, the second is the condition, and the third is the increment.
+
+For loops are a kind of **syntactic sugar** because they are not necessary. While loops could encompass everything.
+
+We can **desugar** the while loop by converting it into a form that the interpreter already knows how to execute.

@@ -1,9 +1,9 @@
 package lox;
 
 import java.util.List;
-import java.beans.Expression;
 import java.util.ArrayList;
 import static lox.TokenType.*;
+import java.util.Arrays;
 
 public class Parser {
     private static class ParseError extends RuntimeException {
@@ -27,14 +27,62 @@ public class Parser {
 
     // private helper function to help us parse statements out of the tokens
     private Stmt statement() {
+        if (match(FOR))
+            return forStatement();
         if (match(IF))
             return ifStatement();
         if (match(PRINT))
             return printStatement();
+        if (match(WHILE))
+            return whileStatement();
         if (match(LEFT_BRACE))
             return new Stmt.Block(block());
-
+        
         return expressionStatement();
+    }
+
+    // this is where desugaring of the for statement occurs, converting it into a while statment
+    private Stmt forStatement() {
+        consume(LEFT_PAREN, "Expect '(' after 'for'.");
+
+        Stmt initializer;
+        if (match(SEMICOLON)) {
+            initializer = null;
+        } else if (match(VAR)) {
+            initializer = varDeclaration();
+        } else {
+            initializer = expressionStatement();
+        }
+
+        Expr condition = null;
+        if (!check(SEMICOLON)) {
+            condition = expression();
+        }
+        consume(SEMICOLON, " Expect ';' after loop condition.");
+
+        Expr increment = null;
+        if(!check(RIGHT_PAREN)) {
+            increment = expression();
+        }
+        consume(RIGHT_PAREN, "Expect ')' after for clauses.");
+
+        Stmt body = statement();
+
+        // increment if there is one. it is inserted directly into the block.
+        if(increment != null) {
+            body = new Stmt.Block(Arrays.asList(body, new Stmt.Expression(increment)));
+        }
+        
+        // if there is no condition, set it automatically to true
+        if(condition == null) condition = new Expr.Literal(true);
+        body = new Stmt.While(condition, body);
+        
+        // if there is an intiializer, run it once before the entire loop as a block statement.
+        if(initializer != null) {
+            body = new Stmt.Block(Arrays.asList(initializer, body));
+        }
+
+        return body;
     }
 
     // private helper function to help use assemble the ifStatement tree node
@@ -74,6 +122,15 @@ public class Parser {
         return new Stmt.Var(name, initializer);
     }
 
+    private Stmt whileStatement() {
+        consume(LEFT_PAREN, "Expect '(' to after 'while'.");
+        Expr condition = expression();
+        consume(RIGHT_PAREN, "Expect ')' after condition.");
+        Stmt body = statement();
+
+        return new Stmt.While(condition, body);
+    }
+
     // an expression statement consumes the expression and wraps it in a statement
     private Stmt expressionStatement() {
         Expr expr = expression();
@@ -103,7 +160,7 @@ public class Parser {
     // we know we are parsing an assignment because the left hand side of the
     // assignment is an l-value/storage location
     private Expr assignment() {
-        Expr expr = equality();
+        Expr expr = or();
 
         // If we have the assignment operator '='
         if (match(EQUAL)) {
@@ -122,6 +179,34 @@ public class Parser {
             // Throw a syntax error if assignment on an invalid left hand expression (e.g. a
             // + b = 3)
             error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
+    }
+
+    // private helper to create the "or" logical condition
+    // it cascades to and() then matches the remaining OR expressions before proceeding
+    private Expr or() {
+        Expr expr = and();
+
+        while(match(OR)) {
+            Token operator = previous();
+            Expr right = and();
+            expr = new Expr.Logical(expr, operator, right);
+        }
+
+        return expr;
+    }
+    
+    // private helper function to match the AND expression
+    // because or() calls and(), AND is of higher precedence than or
+    private Expr and() {
+        Expr expr = equality();
+
+        while(match(AND)) {
+            Token operator = previous();
+            Expr right = equality();
+            expr = new Expr.Logical(expr, operator, right);
         }
 
         return expr;

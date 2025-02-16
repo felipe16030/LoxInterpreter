@@ -42,6 +42,21 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
     }
 
     @Override
+    public Object visitLogicalExpr(Expr.Logical expr) {
+        Object left = evaluate(expr.left);
+
+        // Below is the code that enables short circuit evaluation of logical expressions
+        if (expr.operator.type == TokenType.OR) {
+            // we return left because Lox is dynamically typed and will thus return an Object of equal truthiness
+            if (isTruthy(left)) return left;
+        } else {
+            if (!isTruthy(left)) return left;
+        }
+
+        return evaluate(expr.right);
+    }
+
+    @Override
     public Object visitGroupingExpr(Expr.Grouping expr) {
         // to evaluate a grouping, simply evaluate the inner expression by recursively 
         // visiting the expression
@@ -185,6 +200,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
         }
 
         environment.define(stmt.name.lexeme, value);
+        return null;
+    }
+
+    @Override
+    public Void visitWhileStmt(Stmt.While stmt) {
+        while(isTruthy(evaluate(stmt.condition))) {
+            execute(stmt);
+        }
         return null;
     }
 
