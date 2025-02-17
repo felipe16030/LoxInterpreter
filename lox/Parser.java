@@ -43,14 +43,18 @@ public class Parser {
 
     // this is where desugaring of the for statement occurs, converting it into a while statment
     private Stmt forStatement() {
+        // consume the opening parenth
         consume(LEFT_PAREN, "Expect '(' after 'for'.");
-
+        
+        // capture the initializer
         Stmt initializer;
         if (match(SEMICOLON)) {
+            // if the next char is a ';' there is no initializer
             initializer = null;
         } else if (match(VAR)) {
             initializer = varDeclaration();
         } else {
+            // match to a non-variable declaration which can be an expression statement
             initializer = expressionStatement();
         }
 
@@ -68,16 +72,20 @@ public class Parser {
 
         Stmt body = statement();
 
-        // increment if there is one. it is inserted directly into the block.
+        // at this point, we have captured the initializer, condition, and increment statement/expressions
+
+        // If there is an increment, add it to the end of the body
         if(increment != null) {
             body = new Stmt.Block(Arrays.asList(body, new Stmt.Expression(increment)));
         }
         
-        // if there is no condition, set it automatically to true
+        // If there is no condition, set the condition simply to True (infinite loop)
         if(condition == null) condition = new Expr.Literal(true);
+        // With this, create a new While Loop tree using the existing body and condition
         body = new Stmt.While(condition, body);
         
-        // if there is an intiializer, run it once before the entire loop as a block statement.
+        // if there is an initializer, simply declare it in a block with the now while loop tree so that 
+        // the initialized variable is scoped to the loop.
         if(initializer != null) {
             body = new Stmt.Block(Arrays.asList(initializer, body));
         }
@@ -291,7 +299,22 @@ public class Parser {
             return new Expr.Unary(operator, right);
         }
 
-        return primary();
+        return call();
+    }
+
+    private Expr call() {
+        Expr expr = primary();
+        
+        // do while that assembles the call chain on the expression
+        while(true) {
+            if(match(LEFT_PAREN)) {
+                expr = finishCall(expr);
+            } else {
+                break;
+            }
+        }
+
+        return expr;
     }
 
     private Expr primary() {
