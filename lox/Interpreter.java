@@ -1,13 +1,34 @@
 package lox;
 
 import java.util.List;
+import java.util.ArrayList;
 
 // This will be the evaluation code for each type of expression
 // We return an object from each visitor function because Lox is dynamically typed
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
     // this is our API for the interpreter which takes in a list of statements and executes them
 
-    private Environment environment = new Environment();
+    private Environment globals = new Environment();
+    // this globals will hold a fixed reference to the outermost, global environment
+    private Environment environment = globals;
+
+    Interpreter() {
+        // The Interpreter constructor defines a native function for timing.
+        // It is named 'clock' and it takes no arguments
+        // If we wanted to define more native functions (e.g. reading from file, IO) it would be defined here.
+        globals.define("clock", new LoxCallable() {
+            @Override
+            public int arity() { return 0; }
+            
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                return (double)System.currentTimeMillis() / 1000.0;
+            }
+
+            @Override
+            public String toString() { return "<native fn>"; }
+        });
+    }
 
     public void interpret(List<Stmt> statements) {
         try {
@@ -139,6 +160,30 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
         }
 
         return null;
+    }
+
+    @Override
+    public Object visitCallExpr(Expr.Call expr) {
+        // evaluate the callee first; could be another function call.
+        Object callee = evaluate(expr.callee);
+
+        List<Object> arguments = new ArrayList<>();
+        for (Expr argument : expr.arguments) {
+            // here we evaluate the arguments themselves.
+            arguments.add(evaluate(argument));
+        }
+        // checks to make sure that we are calling a callable object.
+        if (!(callee instanceof LoxCallable)) {
+            throw new RuntimeError(expr.paren, "Can only call functions and classes.");
+        }
+
+        LoxCallable function = (LoxCallable)callee;
+
+        // checks to make sure the number of arguments is equal to the arity of the function
+        if(arguments.size() != function.arity()) {
+            throw new RuntimeError(expr.paren, "Expected " + function.arity() + " arguments but got " + arguments.size() + ".");
+        }
+        return function.call(this, arguments);
     }
 
     private Object evaluate(Expr expr) {

@@ -308,6 +308,7 @@ public class Parser {
         // do while that assembles the call chain on the expression
         while(true) {
             if(match(LEFT_PAREN)) {
+                // while we see '(' keep function calling on the left operand
                 expr = finishCall(expr);
             } else {
                 break;
@@ -315,6 +316,25 @@ public class Parser {
         }
 
         return expr;
+    }
+
+    private Expr finishCall(Expr callee) {
+        List<Expr> arguments = new ArrayList<>();
+        // do while to capture all arguments
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (arguments.size() >= 255) {
+                    error(peek(), "Can't have more than 255 arguments.");
+                }
+                arguments.add(expression());
+            // consumes the ','
+            } while(match(COMMA));
+        }
+        
+        Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+
+        // wrap up the callee, closing parenth, and arguments into an AST node
+        return new Expr.Call(callee, paren, arguments);
     }
 
     private Expr primary() {
