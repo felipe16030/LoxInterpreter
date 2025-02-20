@@ -44,3 +44,24 @@ Some languages also allow users to write their own native functions through **fo
 
 Jlox will implement one native function: telling time in order to benchmark performance.
 
+### Function Declarations
+
+Function declarations join the declaration production.
+
+```Java
+declaration -> funDecl | varDecl | statement ;
+
+funDecl -> "fun" function ;
+function -> IDENTIFIER "(" parameters? ")" block ;
+parameters -> IDENTIFER ("," IDENTIFIER)* ;
+```
+
+### Function Objects
+
+We need to keep track of parameter names to bind to arguments and also the body of functions to execute when called.
+
+We create a new class caleed `LoxFunction` that implements `LoxCallable`. We do not want the runtime to bleed into the syntax trees so we encapsulate the implementation into this new class.
+
+Each function has its own environment to encapsulate its parameters. The environment is created during runtime when it is called. This ensures that techniques such as recursion work as expected.
+
+#### Interpreting User Functions

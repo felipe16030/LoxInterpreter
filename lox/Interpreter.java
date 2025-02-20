@@ -8,7 +8,7 @@ import java.util.ArrayList;
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
     // this is our API for the interpreter which takes in a list of statements and executes them
 
-    private Environment globals = new Environment();
+    final Environment globals = new Environment();
     // this globals will hold a fixed reference to the outermost, global environment
     private Environment environment = globals;
 
@@ -217,6 +217,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
     @Override 
     public Void visitExpressionStmt(Stmt.Expression stmt) {
         evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitFunctionStmt(Stmt.Function stmt) {
+        // we simply take a function syntax node and convert it to its runtime representation.
+        LoxFunction function = new LoxFunction(stmt);
+        environment.define(stmt.name.lexeme, function);
         return null;
     }
 

@@ -147,6 +147,29 @@ public class Parser {
         return new Stmt.Expression(expr);
     }
 
+    private Stmt.Function function(String kind) {
+        // we pass "kind" because we can reuse this method for making class methods later on
+        // consumes the identifier name
+        Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
+        consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+        List<Token> parameters = new ArrayList<>();
+        // consumes the parameters for the function
+        if(!check(RIGHT_PAREN)) {
+            do {
+                if (parameters.size() >= 255) {
+                    error(peek(), "Can't have more than 255 parameters.");
+                }
+
+                parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+            } while (match(COMMA));
+        }
+        consume(RIGHT_PAREN, "Expect ')' after parameters.");
+
+        consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+        List<Stmt> body = block();
+        return new Stmt.Function(name, parameters, body);
+    }
+
     // block returns a list of statements to create a block statement with.
     // it consumes all declarations in a block and feeds them to a list.
     private List<Stmt> block() {
@@ -220,15 +243,15 @@ public class Parser {
         return expr;
     }
 
-    // this is the declaration production that will either produce a statement or
-    // variable declaration
+    // this is the declaration production that will either produce a statement,
+    // variable declaration, or function declaration
     // it is also where we hook up error recovery since it is a high level
     // production
     private Stmt declaration() {
         try {
+            if (match(FUN)) return function("function");
             if (match(VAR))
                 return varDeclaration();
-
             return statement();
         } catch (ParseError error) {
             synchronize();
